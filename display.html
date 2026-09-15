@@ -32,13 +32,13 @@
               card.classList.remove('active');
               setTimeout(() => {
                 isShowing = false;
-              }, 400);
-            }, 4000);
+              }, 300);
+            }, 3000);
           }
         })
         .catch(err => {});
     }
 
     // DIPERCEPAT: Polling server setiap 1.5 detik agar lebih responsif
-    setInterval(pollFoyer, 1500);
+    setInterval(pollFoyer, 1200);
   </script>

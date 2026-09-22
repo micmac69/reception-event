@@ -139,7 +139,7 @@
 <body>
 
   <!-- STANDBY MEDIA / CLEAN SCREEN -->
-  <div class="foyer-standby-container">
+  <div id="standbyContainer" class="foyer-standby-container">
     <div class="standby-inner">
       <div id="standbyEventName" class="standby-title">Exquisite Awards</div>
       <div class="standby-sub">Awaiting Guest Arrival...</div>
@@ -167,10 +167,18 @@
     const urlParams = new URLSearchParams(window.location.search);
     const eventCode = urlParams.get('event') || "EA26-JKT";
     const eventName = urlParams.get('name') || "Exquisite Awards";
+    const bgImage = urlParams.get('bg'); // Opsional: Mendukung background gambar/poster standby
 
-    // Menerapkan nama event dinamis langsung ke layar standby
+    // Terapkan konfigurasi awal ke layar standby secara instan
     document.getElementById('standbyEventName').innerText = eventName;
     document.getElementById('dispEventTag').innerText = "WELCOME TO " + eventName.toUpperCase();
+
+    if (bgImage) {
+      const standbyContainer = document.getElementById('standbyContainer');
+      standbyContainer.style.background = `url('${bgImage}') no-repeat center center`;
+      standbyContainer.style.backgroundSize = 'cover';
+      document.querySelector('.standby-inner').style.display = 'none'; // Sembunyikan teks standar jika pakai poster gambar
+    }
 
     let isShowing = false;
 
@@ -191,19 +199,19 @@
             const card = document.getElementById('welcomeCard');
             card.classList.add('active');
 
-            // Durasi tampil dipercepat jadi 4 detik agar antrean gesit
+            // Durasi tampil popup (4 detik) lalu sembunyikan mulus
             setTimeout(() => {
               card.classList.remove('active');
               setTimeout(() => {
                 isShowing = false;
-              }, 2500);
-            }, 2500);
+              }, 400);
+            }, 4000);
           }
         })
         .catch(err => {});
     }
 
-    // Polling server dipercepat setiap 1.4 detik
+    // Polling antrean tamu setiap 1.4 detik
     setInterval(pollFoyer, 1400);
   </script>
 </body>

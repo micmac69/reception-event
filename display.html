@@ -59,7 +59,7 @@
       font-weight: 700;
     }
 
-    /* WELCOME POPUP CARD (RESPONSIF MENYESUAIKAN UKURAN LAYAR TV / HP) */
+    /* WELCOME POPUP CARD */
     .welcome-overlay {
       position: relative;
       z-index: 10;
@@ -166,19 +166,25 @@
     
     const urlParams = new URLSearchParams(window.location.search);
     const eventCode = urlParams.get('event') || "EA26-JKT";
-    const eventName = urlParams.get('name') || "Exquisite Awards";
-    const bgImage = urlParams.get('bg'); // Opsional: Mendukung background gambar/poster standby
 
-    // Terapkan konfigurasi awal ke layar standby secara instan
-    document.getElementById('standbyEventName').innerText = eventName;
-    document.getElementById('dispEventTag').innerText = "WELCOME TO " + eventName.toUpperCase();
-
-    if (bgImage) {
-      const standbyContainer = document.getElementById('standbyContainer');
-      standbyContainer.style.background = `url('${bgImage}') no-repeat center center`;
-      standbyContainer.style.backgroundSize = 'cover';
-      document.querySelector('.standby-inner').style.display = 'none'; // Sembunyikan teks standar jika pakai poster gambar
-    }
+    // AMBIL CONFIG OTOMATIS DARI GOOGLE SHEET (NAMA EVENT & BACKGROUND)
+    fetch(APPS_SCRIPT_URL + "?action=getEventConfig&event=" + encodeURIComponent(eventCode) + "&t=" + Date.now())
+      .then(res => res.json())
+      .then(ev => {
+        if (ev && ev.name) {
+          document.getElementById('standbyEventName').innerText = ev.name;
+          document.getElementById('dispEventTag').innerText = "WELCOME TO " + ev.name.toUpperCase();
+        }
+        if (ev && ev.standbyImage) {
+          const standbyContainer = document.getElementById('standbyContainer');
+          standbyContainer.style.background = `url('${ev.standbyImage}') no-repeat center center`;
+          standbyContainer.style.backgroundSize = 'cover';
+          document.querySelector('.standby-inner').style.display = 'none';
+        }
+      })
+      .catch(err => {
+        console.error("Failed to load event configuration", err);
+      });
 
     let isShowing = false;
 
@@ -199,7 +205,6 @@
             const card = document.getElementById('welcomeCard');
             card.classList.add('active');
 
-            // Durasi tampil popup (4 detik) lalu sembunyikan mulus
             setTimeout(() => {
               card.classList.remove('active');
               setTimeout(() => {
@@ -211,7 +216,6 @@
         .catch(err => {});
     }
 
-    // Polling antrean tamu setiap 1.4 detik
     setInterval(pollFoyer, 1400);
   </script>
 </body>

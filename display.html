@@ -38,10 +38,12 @@
       align-items: center;
       justify-content: center;
       background: var(--bg-dark);
+      overflow: hidden;
     }
     .standby-inner {
       text-align: center;
       padding: 20px;
+      z-index: 2;
     }
     .standby-title {
       font-size: clamp(1.8rem, 4vw, 3rem);
@@ -138,7 +140,7 @@
 </head>
 <body>
 
-  <!-- STANDBY MEDIA / CLEAN SCREEN -->
+  <!-- STANDBY MEDIA / CLEAN SCREEN (IMAGE OR VIDEO) -->
   <div id="standbyContainer" class="foyer-standby-container">
     <div class="standby-inner">
       <div id="standbyEventName" class="standby-title">Exquisite Awards</div>
@@ -167,7 +169,7 @@
     const urlParams = new URLSearchParams(window.location.search);
     const eventCode = urlParams.get('event') || "EA26-JKT";
 
-    // AMBIL CONFIG OTOMATIS DARI GOOGLE SHEET (NAMA EVENT & BACKGROUND)
+    // AMBIL CONFIG OTOMATIS DARI GOOGLE SHEET (NAMA EVENT & BACKGROUND / VIDEO)
     fetch(APPS_SCRIPT_URL + "?action=getEventConfig&event=" + encodeURIComponent(eventCode) + "&t=" + Date.now())
       .then(res => res.json())
       .then(ev => {
@@ -177,9 +179,26 @@
         }
         if (ev && ev.standbyImage) {
           const standbyContainer = document.getElementById('standbyContainer');
-          standbyContainer.style.background = `url('${ev.standbyImage}') no-repeat center center`;
-          standbyContainer.style.backgroundSize = 'cover';
-          document.querySelector('.standby-inner').style.display = 'none';
+          const mediaUrl = ev.standbyImage.trim();
+          
+          // Deteksi apakah link berformat video (.mp4, .webm, .mov)
+          const isVideo = /\.(mp4|webm|mov|ogg)(\?.*)?$/i.test(mediaUrl) || mediaUrl.includes('video');
+
+          if (isVideo) {
+            standbyContainer.style.background = '#000';
+            standbyContainer.innerHTML = `
+              <video autoplay muted loop playsinline style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 0;">
+                <source src="${mediaUrl}" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+              <div class="standby-inner" style="display:none;"></div>
+            `;
+          } else {
+            standbyContainer.style.background = `url('${mediaUrl}') no-repeat center center`;
+            standbyContainer.style.backgroundSize = 'cover';
+            const inner = document.querySelector('.standby-inner');
+            if (inner) inner.style.display = 'none';
+          }
         }
       })
       .catch(err => {
